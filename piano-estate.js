@@ -2,6 +2,14 @@
   const container = document.getElementById('piano-estate-list');
   const ENDPOINT = 'https://sgd2awp.portaleargo.it/sgd2awp/all/SG17925';
 
+  const MESI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC'];
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
   fetch(ENDPOINT)
     .then(r => {
       console.log('[Piano Estate] fetch status:', r.status);
@@ -27,36 +35,43 @@
         return;
       }
 
-      const ul = document.createElement('ul');
-      ul.className = 'piano-estate-list';
-
       filtrati.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'piano-estate-item';
+        const d = item.lastModifiedAt ? new Date(item.lastModifiedAt) : null;
+        const anno = d ? d.getFullYear() : '';
+        const giorno = d ? String(d.getDate()).padStart(2, '0') : '';
+        const mese = d ? MESI[d.getMonth()] : '';
 
-        const data = item.lastModifiedAt
-          ? new Date(item.lastModifiedAt).toLocaleDateString('it-IT')
-          : '';
+        const nDocumenti = Array.isArray(item.files) ? item.files.length : 0;
 
         let filesHtml = '';
-        if (Array.isArray(item.files) && item.files.length > 0) {
-          filesHtml = '<ul class="piano-estate-files">' +
+        if (nDocumenti > 0) {
+          filesHtml = '<ul class="list-file-gecodoc">' +
             item.files.map(f =>
-              `<li><a href="${f.url}" target="_blank" rel="noopener">${f.filename}</a></li>`
+              '<li class="single-file-gecodoc"><a href="' + f.url +
+              '" title="' + escapeHtml(f.title || '') + '" target="_blank" rel="noopener">' +
+              escapeHtml(f.filename) + '</a></li>'
             ).join('') +
             '</ul>';
         }
 
-        li.innerHTML = `
-          <div class="piano-estate-titolo">${item.titolo || item.descrizione}</div>
-          <div class="piano-estate-data">${data}</div>
-          ${filesHtml}
-        `;
+        const titolo = escapeHtml(item.titolo || item.descrizione);
+        const descrizione = escapeHtml(item.descrizione || item.titolo);
 
-        ul.appendChild(li);
+        const html =
+          '<article class="presentation-card-link gecodoc-argo documenti-personale card card-bg card-article card-article-greendark cursorhand" data-focus-mouse="false">' +
+            '<div class="card-body">' +
+              '<div class="date"><span class="year">' + anno + '</span><span class="day">' + giorno + '</span><span class="month">' + mese + '</span></div>' +
+              '<div class="card-article-content">' +
+                '<div class="div-titolo"><h3 class="titolo">' + titolo + '</h3></div>' +
+                '<p class="descrizione">' + descrizione + '</p>' +
+                '<small class="h6 text-greendark">N. documenti: ' + nDocumenti + '</small>' +
+                filesHtml +
+              '</div>' +
+            '</div>' +
+          '</article>';
+
+        container.insertAdjacentHTML('beforeend', html);
       });
-
-      container.appendChild(ul);
     })
     .catch(err => {
       console.error('[Piano Estate] fetch fallito:', err);
