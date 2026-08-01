@@ -1,5 +1,5 @@
 (function () {
-  const container = document.getElementById('piano-estate-list');
+  const container = document.getElementById('pnrr-list');
   const ENDPOINT = 'https://sgd2awp.portaleargo.it/sgd2awp/all/SG17925';
 
   const MESI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC'];
